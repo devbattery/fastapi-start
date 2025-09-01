@@ -10,3 +10,8 @@ BOOKS = [
     {'title': 'Title Five', 'author': 'Author Five', 'category': 'math'},
     {'title': 'Title Six', 'author': 'Author Two', 'category': 'math'},
 ]
+
+
+@app.get("/api/books")
+async def read_all_books():
+    return BOOKS

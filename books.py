@@ -24,3 +24,13 @@ async def read_book(book_title: str):
             return book
 
     return None
+
+
+@app.get("/api/books/")
+async def read_category_by_query(category: str):
+    books_to_return = []
+    for book in BOOKS:
+        if book.get('category').casefold() == category.casefold():
+            books_to_return.append(book)
+
+    return books_to_return

@@ -60,3 +60,13 @@ async def update_book(updated_book=Body()):
             BOOKS[i] = updated_book
 
     return BOOKS
+
+
+@app.delete("/api/books/delete/{book_title}")
+async def delete_book(book_title: str):
+    for i in range(len(BOOKS)):
+        if BOOKS[i].get('title').casefold() == book_title.casefold():
+            BOOKS.pop(i)
+            break
+
+    return BOOKS

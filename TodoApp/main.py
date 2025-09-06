@@ -8,10 +8,13 @@ from starlette import status
 from TodoApp import models
 from TodoApp.database import engine, SessionLocal
 from TodoApp.models import Todos
+from TodoApp.routers import auth
 
 app = FastAPI()
 
 models.Base.metadata.create_all(bind=engine)
+
+app.include_router(auth.router)
 
 
 def get_db():

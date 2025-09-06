@@ -32,8 +32,8 @@ class TodoRequest(BaseModel):
 
 
 @router.get("/api/todos")
-async def read_todos_all(db: db_dependency):
-    return db.query(Todos).all()
+async def read_todos_all(user: user_dependency, db: db_dependency):
+    return db.query(Todos).filter(Todos.owner_id == user.get('id')).all()
 
 
 @router.get("/api/todos/{todo_id}", status_code=status.HTTP_200_OK)

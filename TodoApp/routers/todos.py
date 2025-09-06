@@ -9,7 +9,9 @@ from TodoApp.database import SessionLocal
 from TodoApp.models import Todos
 from TodoApp.routers.auth import get_current_user
 
-router = APIRouter()
+router = APIRouter(
+    tags=['todo']
+)
 
 
 def get_db():

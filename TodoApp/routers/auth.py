@@ -12,13 +12,15 @@ from starlette import status
 from TodoApp.database import SessionLocal
 from TodoApp.models import Users
 
-router = APIRouter()
+router = APIRouter(
+    tags=['auth']
+)
 
 SECRET_KEY = '541c16b11282dd2bf69bcddd8f814e6f73755cbef211a053796d595d4ec07444'
 ALGORITHM = 'HS256'
 
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl='token')
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl='api/auth/token')
 
 
 class CreateUserRequest(BaseModel):
@@ -94,11 +96,11 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
     db.commit()
 
 
-@router.post("/token", response_model=Token)
+@router.post("/api/auth/token", response_model=Token)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
-        return 'Failed Authentication'
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Could not validate user.')
 
     token = create_access_token(user.username, user.id, timedelta(minutes=20))
 

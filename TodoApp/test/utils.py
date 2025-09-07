@@ -5,7 +5,8 @@ from starlette.testclient import TestClient
 
 from TodoApp.database import Base
 from TodoApp.main import app
-from TodoApp.models import Todos
+from TodoApp.models import Todos, Users
+from TodoApp.routers.users import bcrypt_context
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./testdb.db"
 
@@ -52,4 +53,26 @@ def test_todo():
     yield todo
     with engine.connect() as connection:
         connection.execute(text("DELETE FROM todos;"))
+        connection.commit()
+
+
+@pytest.fixture
+def test_user():
+    user = Users(
+        username='devbattery',
+        email='devbattery@outlook.com',
+        first_name='Wonjun',
+        last_name='Jeong',
+        hashed_password=bcrypt_context.hash('qwe123'),
+        role='admin',
+        phone_number='(111)-111-1111'
+    )
+
+    db = TestingSessionLocal()
+    db.add(user)
+    db.commit()
+
+    yield user
+    with engine.connect() as connection:
+        connection.execute(text("DELETE FROM users;"))
         connection.commit()

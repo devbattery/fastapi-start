@@ -1,10 +1,12 @@
-from sqlalchemy import create_engine, StaticPool
+import pytest
+from sqlalchemy import create_engine, StaticPool, text
 from sqlalchemy.orm import sessionmaker
 from starlette import status
 from starlette.testclient import TestClient
 
 from TodoApp.database import Base
 from TodoApp.main import app
+from TodoApp.models import Todos
 from TodoApp.routers.auth import get_current_user
 from TodoApp.routers.todos import get_db
 
@@ -39,7 +41,29 @@ app.dependency_overrides[get_current_user] = override_get_current_user
 client = TestClient(app)
 
 
-def test_read_all_authenticated():
+@pytest.fixture
+def test_todo():
+    todo = Todos(
+        title='Learn to code!',
+        description='Need to learn everyday!',
+        priority=5,
+        complete=False,
+        owner_id=1
+    )
+
+    db = TestingSessionLocal()
+    db.add(todo)
+    db.commit()
+
+    yield todo
+    with engine.connect() as connection:
+        connection.execute(text("DELETE FROM todos;"))
+        connection.commit()
+
+
+def test_read_all_authenticated(test_todo):
     response = client.get("/api/todos")
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == []
+    assert response.json() == [
+        {'complete': False, 'title': 'Learn to code!', 'description': 'Need to learn everyday!', 'id': 1,
+         'priority': 5, 'owner_id': 1}]

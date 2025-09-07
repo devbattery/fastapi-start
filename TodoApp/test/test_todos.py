@@ -1,8 +1,12 @@
 from sqlalchemy import create_engine, StaticPool
 from sqlalchemy.orm import sessionmaker
+from starlette import status
+from starlette.testclient import TestClient
 
 from TodoApp.database import Base
 from TodoApp.main import app
+from TodoApp.routers.auth import get_current_user
+from TodoApp.routers.todos import get_db
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./testdb.db"
 
@@ -25,4 +29,17 @@ def override_get_db():
         db.close()
 
 
+def override_get_current_user():
+    return {'username': 'redhood', 'id': 1, 'user_role': 'admin'}
+
+
 app.dependency_overrides[get_db] = override_get_db
+app.dependency_overrides[get_current_user] = override_get_current_user
+
+client = TestClient(app)
+
+
+def test_read_all_authenticated():
+    response = client.get("/api/todos")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == []
